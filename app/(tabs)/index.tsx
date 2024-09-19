@@ -1,70 +1,146 @@
-import { Image, StyleSheet, Platform } from 'react-native';
-
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import React, { useState } from "react";
+import {
+  Alert,
+  FlatList,
+  NativeSyntheticEvent,
+  StatusBar,
+  StyleSheet,
+  TextInput,
+  TextInputChangeEventData,
+  TouchableOpacity,
+} from "react-native";
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
+import Participant from "@/components/Participant";
 
 export default function HomeScreen() {
+  const [name, setName] = useState<string>("");
+  const [participants, setParticipants] = useState<string[]>([]);
+
+  function handleAddParticipant() {
+    if (participants.includes(name)) {
+      return Alert.alert("O participante já existe");
+    }
+    setParticipants((prevState) => [...prevState, name]);
+    setName("");
+  }
+
+  function handleChange(event: NativeSyntheticEvent<TextInputChangeEventData>) {
+    setName(event.nativeEvent.text);
+  }
+
+  function handleRemoveParticipant(name: string) {
+    Alert.alert("Remover", `Remover o participante ${name}?`, [
+      {
+        text: "Sim",
+        onPress: () =>
+          setParticipants((prevState) =>
+            prevState.filter((participant) => participant !== name)
+          ),
+      },
+      {
+        text: "Não",
+        style: "cancel",
+      },
+    ]);
+  }
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
+    <>
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor="transparent"
+        translucent
+      />
       <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({ ios: 'cmd + d', android: 'cmd + m' })}
-          </ThemedText>{' '}
-          to open developer tools.
+        <ThemedText style={styles.eventName}>Nome do Evento</ThemedText>
+        <ThemedText style={styles.eventDate}>
+          Terça, 17 de Setembro de 2024
         </ThemedText>
+
+        <ThemedView style={styles.form}>
+          <TextInput
+            style={styles.input}
+            placeholder="Nome do participante"
+            placeholderTextColor="#6b6b6b"
+            onChange={handleChange}
+            value={name}
+          />
+
+          <TouchableOpacity
+            style={styles.button}
+            onPress={handleAddParticipant}
+          >
+            <ThemedText style={styles.buttonText}>+</ThemedText>
+          </TouchableOpacity>
+        </ThemedView>
+
+        <FlatList
+          data={participants}
+          keyExtractor={(participant) => participant}
+          renderItem={({ item }) => (
+            <Participant
+              key={item}
+              onRemove={() => handleRemoveParticipant(item)}
+              name={item}
+            />
+          )}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={() => (
+            <ThemedText style={styles.empty}>
+              Nenhum participante na lista
+            </ThemedText>
+          )}
+        />
       </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+    flex: 1,
+    padding: 24,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  eventName: {
+    color: "#fdfcfe",
+    fontSize: 24,
+    fontWeight: "bold",
+    marginTop: 48,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  eventDate: {
+    color: "#6b6b6b",
+    fontSize: 16,
+  },
+  input: {
+    height: 50,
+    backgroundColor: "#1f1e25",
+    borderRadius: 5,
+    color: "#fff",
+    padding: 16,
+    fontSize: 16,
+    flex: 1,
+    marginRight: 12,
+  },
+  button: {
+    width: 50,
+    height: 50,
+    borderRadius: 5,
+    backgroundColor: "#31cf67",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 24,
+  },
+  form: {
+    marginTop: 36,
+    marginBottom: 50,
+    width: "100%",
+    flexDirection: "row",
+  },
+  empty: {
+    textAlign: "center",
   },
 });
