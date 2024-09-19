@@ -1,4 +1,4 @@
-# Participant registration App 📋
+# Participant list App 📋
 
 ## Built in React Native using Expo 📱
 
